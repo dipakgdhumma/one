@@ -1,0 +1,17 @@
+mysql> show variables like 'secure_file_priv'
+    -> ;
++------------------+------------------------------------------------+
+| Variable_name    | Value                                          |
++------------------+------------------------------------------------+
+| secure_file_priv | C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\ |
++------------------+------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM emp INTO OUTFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\out.txt';
+ERROR 1086 (HY000): File 'C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\out.txt' already exists
+mysql> SELECT * FROM emp INTO OUTFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\out2.txt';
+Query OK, 1 row affected (0.00 sec)
+
+mysql> load data infile 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\out.txt' into table emp;
+Query OK, 1 row affected (0.01 sec)
+Records: 1  Deleted: 0  Skipped: 0  Warnings: 0

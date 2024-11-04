@@ -1,0 +1,81 @@
+mysql> CREATE DATABASE LibraryManagement;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> USE LibraryManagement;
+Database changed
+mysql> CREATE TABLE Borrower (
+    ->     Roll_no INT PRIMARY KEY,
+    ->     Name VARCHAR(100),
+    ->     Date_of_Issue DATE,
+    ->     Name_of_Book VARCHAR(255),
+    ->     Status CHAR(1) -- 'I' for Issued, 'R' for Returned
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CREATE TABLE Fine (
+    ->     Fine_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     Roll_no INT,
+    ->     Date DATE,
+    ->     Amt DECIMAL(10,2),
+    ->     FOREIGN KEY (Roll_no) REFERENCES Borrower(Roll_no)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> -- Insert sample data into Borrower table
+mysql> INSERT INTO Borrower (Roll_no, Name, Date_of_Issue, Name_of_Book, Status)
+    -> VALUES
+    ->     (101, 'John Doe', '2024-09-15', 'Introduction to Algorithms', 'I'),
+    ->     (102, 'Alice Smith', '2024-09-25', 'Data Structures', 'I'),
+    ->     (103, 'Bob Johnson', '2024-10-01', 'Machine Learning', 'I');
+Query OK, 3 rows affected (0.01 sec)
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE HandleBookReturn(
+    ->     IN p_Roll_no INT,
+    ->     IN p_Name_of_Book VARCHAR(255)
+    -> )
+    -> BEGIN
+    ->     DECLARE v_days_diff INT;
+    ->     DECLARE v_fine_amt DECIMAL(10,2);
+    ->     DECLARE v_Date_of_Issue DATE;
+    ->
+    ->     -- Declare user-defined exception handler
+    ->     DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    ->     BEGIN
+    ->         -- Handle any SQL exceptions here
+    ->         SIGNAL SQLSTATE '45000'
+    ->             SET MESSAGE_TEXT = 'An error occurred while processing the return';
+    ->     END;
+    ->
+    ->     -- Get the Date_of_Issue from Borrower table for the given Roll_no and Name_of_Book
+    ->     SELECT Date_of_Issue INTO v_Date_of_Issue
+    ->     FROM Borrower
+    ->     WHERE Roll_no = p_Roll_no AND Name_of_Book = p_Name_of_Book AND Status = 'I';
+    ->
+    ->     -- Calculate the number of days since the book was issued
+    ->     SET v_days_diff = DATEDIFF(CURDATE(), v_Date_of_Issue);
+    ->
+    ->     -- Determine the fine amount based on the number of days
+    ->     IF v_days_diff > 15 AND v_days_diff <= 30 THEN
+    ->         SET v_fine_amt = (v_days_diff - 15) * 5;
+    ->     ELSEIF v_days_diff > 30 THEN
+    ->         SET v_fine_amt = 15 * 5 + (v_days_diff - 30) * 50;
+    ->     ELSE
+    ->         SET v_fine_amt = 0;
+    ->     END IF;
+    ->
+    ->     -- Update the status to 'R' (Returned)
+    ->     UPDATE Borrower
+    ->     SET Status = 'R'
+    ->     WHERE Roll_no = p_Roll_no AND Name_of_Book = p_Name_of_Book;
+    ->
+    ->     -- If there's a fine, insert the fine details into the Fine table
+
+    ->     IF v_fine_amt > 0 THEN
+    ->         INSERT INTO Fine (Roll_no, Date, Amt)
+    ->         VALUES (p_Roll_no, CURDATE(), v_fine_amt);
+    ->     END IF;
+    ->
+    ->     -- Optional: Notify the user that the book has been successfully returned and fine applied
+    ->     SELECT 'Book Returned Successfully!' AS Message, v_fine_amt AS Fine_Amount;
+    ->

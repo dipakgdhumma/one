@@ -1,0 +1,84 @@
+USE abc;
+-- Create the o_rollcall table
+CREATE TABLE IF NOT EXISTS o_rollcall (
+    roll_no INT NOT NULL,
+    name VARCHAR(25) NOT NULL,
+    `div` VARCHAR(5) NOT NULL,
+    PRIMARY KEY (roll_no)
+);
+
+-- Create the n_rollcall table
+CREATE TABLE IF NOT EXISTS n_rollcall (
+    roll_no INT NOT NULL,
+    name VARCHAR(25) NOT NULL,
+    `div` VARCHAR(5) NOT NULL,
+    PRIMARY KEY (roll_no)
+);
+
+-- Insert sample data into o_rollcall
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (11, 'ABHISHEK', 'A');
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (12, 'SAKSHI', 'A');
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (13, 'SANKET', 'B');
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (14, 'MAYUR', 'A');
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (15, 'ROHAN', 'B');
+INSERT INTO o_rollcall (roll_no, name, `div`) VALUES (16, 'SANJU', 'B');
+
+
+-- Insert values into n_rollcall, including duplicates
+INSERT INTO n_rollcall (roll_no, name, `div`) VALUES (17, 'PRIYA', 'C');   -- Unique
+INSERT INTO n_rollcall (roll_no, name, `div`) VALUES (18, 'KAVYA', 'D');   -- Unique
+INSERT INTO n_rollcall (roll_no, name, `div`) VALUES (19, 'ARJUN', 'E');    -- Unique
+insert into n_rollcall(roll_no,name, `div`) values (22,'mayuresh','A');
+
+select * from n_rollcall;
+DELIMITER //
+
+CREATE PROCEDURE MergeRollCallData()
+BEGIN
+    -- Declare variables for fetched data
+    DECLARE v_roll_no INT;
+    DECLARE v_name VARCHAR(25);
+    DECLARE v_div VARCHAR(5);
+    DECLARE done INT DEFAULT FALSE;  -- Declare the done variable
+
+    -- Declare a cursor for selecting from n_rollcall
+    DECLARE n_cursor CURSOR FOR
+        SELECT roll_no, name, `div` FROM n_rollcall;
+
+    -- Declare a handler to set done to TRUE when no more rows are found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Clear the destination table
+    DELETE FROM o_rollcall WHERE roll_no IN (SELECT roll_no FROM n_rollcall);
+
+    -- Open the cursor
+    OPEN n_cursor;
+
+    -- Loop through the cursor
+    read_loop: LOOP
+        FETCH n_cursor INTO v_roll_no, v_name, v_div;
+
+        -- Exit if no more rows
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Insert data directly without checking if it exists
+        INSERT INTO o_rollcall (roll_no, name, `div`) 
+        VALUES (v_roll_no, v_name, v_div);
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE n_cursor;
+
+    -- Output a success message
+    SELECT 'Data merged successfully.' AS message;
+END //
+
+DELIMITER ;
+
+-- Call the procedure
+CALL MergeRollCallData();
+
+-- Select to check the result
+SELECT * FROM o_rollcall;

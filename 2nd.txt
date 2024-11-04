@@ -1,0 +1,54 @@
+
+from single table
+CREATE VIEW DetailsView AS
+SELECT NAME, ADDRESS
+FROM StudentDetails
+WHERE S_ID < 5;
+
+SELECT * FROM DetailsView;
+
+
+from muliple tables 
+CREATE VIEW MarksView AS
+SELECT StudentDetails.NAME, StudentDetails.ADDRESS, StudentMarks.MARKS
+FROM StudentDetails, StudentMarks
+WHERE StudentDetails.NAME = StudentMarks.NAME;
+
+USE "database_name";
+SHOW FULL TABLES WHERE table_type LIKE "%VIEW";
+
+DROP VIEW view_name;
+
+The SELECT statement which is used to create the view should not include GROUP BY clause or ORDER BY clause.
+The SELECT statement should not have the DISTINCT keyword.
+The View should have all NOT NULL values.
+The view should not be created using nested queries or complex queries.
+The view should be created from a single table. If the view is created using multiple tables then we will not be allowed to update the view.
+Examples
+
+
+
+JOINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+
+SELECT s.roll_no, s.name, s.address, s.phone, s.age, sc.course_id
+FROM Student s
+JOIN StudentCourse sc ON s.roll_no = sc.roll_no;
+
+SELECT StudentCourse.COURSE_ID, Student.NAME, Student.AGE FROM Student
+INNER JOIN StudentCourse
+ON Student.ROLL_NO = StudentCourse.ROLL_NO;
+
+
+SELECT Student.NAME,StudentCourse.COURSE_ID 
+FROM Student
+RIGHT JOIN StudentCourse 
+ON StudentCourse.ROLL_NO = Student.ROLL_NO;
+
+
+SELECT * 
+FROM Employee 
+WHERE department=(SELECT department FROM Departments WHERE deptid=1);
+
+LECT * 
+FROM Employee 
+WHERE salary < (SELECT avg(salary) from Employee)

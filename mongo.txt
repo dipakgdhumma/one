@@ -1,0 +1,55 @@
+mongosh
+use dbname
+show db
+show collactions
+db.dropDatabase
+db.collactionname.drop()
+
+db.collectionName.insertOne({
+  name: "John Doe",
+  age: 30,
+  email: "john@example.com"
+});
+
+// Insert multiple documents
+db.collectionName.insertMany([
+  { name: "Jane Doe", age: 25, email: "jane@example.com" },
+  { name: "Jim Beam", age: 35, email: "jim@example.com" }
+]);
+
+
+2. Read (Query Documents)
+MongoDB Shell:
+
+javascript
+Copy code
+// Find all documents
+db.collectionName.find();
+
+// Find one document
+db.collectionName.findOne({ name: "John Doe" });
+
+// Find with a filter
+db.collectionName.find({ age: { $gt: 28 } }); // Age greater than 28
+
+// Find with specific fields
+db.collectionName.find({}, { name: 1, email: 1 }); // Only name and email
+
+// Update a single document
+db.collectionName.updateOne(
+  { name: "John Doe" }, // Filter
+  { $set: { age: 31 } } // Update
+);
+
+// Update multiple documents
+db.collectionName.updateMany(
+  { age: { $gt: 30 } }, // Filter
+  { $set: { status: "senior" } } // Update
+);
+
+
+// Delete a single document
+db.collectionName.deleteOne({ name: "John Doe" });
+
+// Delete multiple documents
+db.collectionName.deleteMany({ age: { $lt: 30 } }); // Delete documents with age less than 30
